@@ -13,7 +13,6 @@ export interface IUserModel extends Omit<IUser, "_id">, mongoose.Document {
   verifyHash: string;
   comparePassword: (password: string) => Promise<boolean>;
   createToken: () => object;
-  renewToken: (refreshToken: string) => object;
 }
 
 export const UserSchema = new mongoose.Schema<IUserModel>(
@@ -85,31 +84,11 @@ UserSchema.methods.createToken = function () {
     user: user._id,
     expiryDate: expiredDate,
   });
-  return { accessToken: token, refreshToken: refreshToken };
-};
-
-UserSchema.methods.renewToken = async function (refreshToken: string) {
-  const user = this as IUserModel;
-  const token = await Token.findOne({ token: refreshToken });
-  if (!token) {
-    throw new Error("Invalid refresh token");
-  }
-  if (token.user.toString() !== user._id.toString()) {
-    throw new Error("Invalid refresh token");
-  }
-  if (token.expiryDate < new Date()) {
-    throw new Error("Refresh token expired");
-  }
-  const newToken = jwt.sign(
-    {
-      id: user._id,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: 86400, // 1 day
-    }
-  );
-  return { accessToken: newToken, refreshToken: token };
+  refreshToken.save();
+  return { accessToken: token, refreshToken: {
+    token: refreshToken.token,
+    expiryDate: refreshToken.expiryDate,
+  } };
 };
 
 const User = mongoose.model<IUserModel>("User", UserSchema);

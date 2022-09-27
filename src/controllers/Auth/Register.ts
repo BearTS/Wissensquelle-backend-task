@@ -20,12 +20,9 @@ class Register {
         phone,
         password,
       } = req.body;
-      const roles = ["admin", "user", "agent"];
-      if (!roles.includes(role)) {
-        return res.status(400).send("Invalid role");
-      }
-      const user: IUserModel = await User.findOne({ email });
-      if (user.role === role) {
+      const user: IUserModel = await User.findOne({ email: email, role: role });
+      console.log(user);
+      if (user) {
         return res.status(400).send("User already exists");
       }
       const hash = v4();
@@ -42,10 +39,10 @@ class Register {
       });
       await newUser.save();
       const subject = "Verify your email";
-      const html = `<a href="http://${req.get("host")}/verify/${
+      const html = `<a href="http://${req.get("host")}/api/verify/${
         newUser._id
       }/${hash}">Verify your email</a>`;
-      await sendEmail(user.email, subject, html);
+      await sendEmail(newUser.email, subject, html);
       return res.status(201).json({
         message: "User created. Check your email to verify your account",
       });
@@ -61,6 +58,7 @@ class Register {
   ): Promise<Response | void> {
     try {
       const { id, hash } = req.params;
+      
       const user: IUserModel = await User.findById(id);
       if (!user) {
         return res.status(404).send("User not found");
@@ -86,8 +84,8 @@ class Register {
     res: Response
   ): Promise<Response | void> {
     try {
-      const { email } = req.body;
-      const user: IUserModel = await User.findOne({ email });
+      const { email, role } = req.body;
+      const user: IUserModel = await User.findOne({ email: email, role: role });
       if (!user) {
         return res.status(404).send("User not found");
       }
@@ -98,7 +96,7 @@ class Register {
       user.verifyHash = hash;
       await user.save();
       const subject = "Verify your email";
-      const html = `<a href="http://${req.get("host")}/verify/${
+      const html = `<a href="http://${req.get("host")}/api/verify/${
         user._id
       }/${hash}">Verify your email</a>`;
       await sendEmail(user.email, subject, html);

@@ -3,39 +3,44 @@ import Login from "../controllers/Auth/Login";
 import Register from "../controllers/Auth/Register";
 import Validate from "../middlewares/Validate";
 import Joi from "joi";
+// @ts-ignore
+import country from "joi-country"; 
 const router = Router();
+const joi = Joi.extend(country);
 
 const schema = {
-  signup: Joi.object({
-    firstName: Joi.string().required(),
-    middleName: Joi.string().allow(""),
-    lastName: Joi.string().required(),
-    country: Joi.string().required(),
-    phone: Joi.string().required(),
+  signup: joi.object({
+    firstName: joi.string().required(),
+    middleName: joi.string().allow(""),
+    lastName: joi.string().required(),
+    country: joi.string().required().country(),
+    phone: joi.string().required().regex(/^[0-9]{10}$/),
 
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-    role: Joi.string().required(),
-    confirm: Joi.string().required().equal(Joi.ref("password")),
+
+    email: joi.string().email().required(),
+    password: joi.string().required(),
+    role: joi.string().required().valid("user", "admin", "agent"),
+    confirm: joi.string().required().equal(joi.ref("password")),
   }),
-  login: Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-    role: Joi.string().required(),
+  login: joi.object({
+    email: joi.string().email().required(),
+    password: joi.string().required(),
+    role: joi.string().required().valid("user", "admin", "agent"),
   }),
-  sendForgotPassword: Joi.object({
-    email: Joi.string().email().required(),
+  sendForgotPassword: joi.object({
+    email: joi.string().email().required(),
+    role: joi.string().required().valid("user", "admin", "agent"),
   }),
-  resetPassParam: Joi.object({
-    id: Joi.string().required().min(24).max(24),
-    hash: Joi.string().required(),
+  resetPassParam: joi.object({
+    id: joi.string().required().min(24).max(24),
+    hash: joi.string().required(),
   }),
-  id: Joi.object({
-    id: Joi.string().required().min(24).max(24),
+  token: joi.object({
+    token: joi.string().required(),
   }),
-  resetPassword: Joi.object({
-    password: Joi.string().required(),
-    confirm: Joi.string().required().equal(Joi.ref("password")),
+  resetPassword: joi.object({
+    password: joi.string().required(),
+    confirm: joi.string().required().equal(joi.ref("password")),
   }),
 };
 
@@ -45,15 +50,15 @@ router.post(
   Validate.body(schema.sendForgotPassword),
   Login.sendForgotPassword
 );
-router.post(
+router.patch(
   "/auth/resetPassword/:id/:hash",
   Validate.params(schema.resetPassParam),
   Validate.body(schema.resetPassword),
   Login.resetPassword
 );
-router.get(
-  "/auth/renewToken/:id",
-  Validate.params(schema.id),
+router.post(
+  "/auth/renewToken",
+  Validate.body(schema.token),
   Login.renewToken
 );
 
