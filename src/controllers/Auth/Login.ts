@@ -71,7 +71,7 @@ class Login {
     try {
       const { id, hash } = req.params;
       const { password } = req.body;
-      const user: IUserModel = await User.findById(id)
+      const user: IUserModel = await User.findById(id);
       console.log(user);
       if (!user) {
         return res.status(404).send("User not found");

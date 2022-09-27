@@ -85,10 +85,13 @@ UserSchema.methods.createToken = function () {
     expiryDate: expiredDate,
   });
   refreshToken.save();
-  return { accessToken: token, refreshToken: {
-    token: refreshToken.token,
-    expiryDate: refreshToken.expiryDate,
-  } };
+  return {
+    accessToken: token,
+    refreshToken: {
+      token: refreshToken.token,
+      expiryDate: refreshToken.expiryDate,
+    },
+  };
 };
 
 const User = mongoose.model<IUserModel>("User", UserSchema);

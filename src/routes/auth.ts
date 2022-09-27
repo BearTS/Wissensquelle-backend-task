@@ -4,7 +4,7 @@ import Register from "../controllers/Auth/Register";
 import Validate from "../middlewares/Validate";
 import Joi from "joi";
 // @ts-ignore
-import country from "joi-country"; 
+import country from "joi-country";
 const router = Router();
 const joi = Joi.extend(country);
 
@@ -14,8 +14,10 @@ const schema = {
     middleName: joi.string().allow(""),
     lastName: joi.string().required(),
     country: joi.string().required().country(),
-    phone: joi.string().required().regex(/^[0-9]{10}$/),
-
+    phone: joi
+      .string()
+      .required()
+      .regex(/^[0-9]{10}$/),
 
     email: joi.string().email().required(),
     password: joi.string().required(),
@@ -56,11 +58,7 @@ router.patch(
   Validate.body(schema.resetPassword),
   Login.resetPassword
 );
-router.post(
-  "/auth/renewToken",
-  Validate.body(schema.token),
-  Login.renewToken
-);
+router.post("/auth/renewToken", Validate.body(schema.token), Login.renewToken);
 
 router.post("/auth/signup", Validate.body(schema.signup), Register.signup);
 router.get(

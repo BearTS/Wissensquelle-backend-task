@@ -58,7 +58,7 @@ class Register {
   ): Promise<Response | void> {
     try {
       const { id, hash } = req.params;
-      
+
       const user: IUserModel = await User.findById(id);
       if (!user) {
         return res.status(404).send("User not found");
