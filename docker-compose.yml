@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  mongodb:
+    image: mongo:5.0.2
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    ports:
+      - 25071:25071
+    volumes:
+      - ../mongodb:/data/db
+  app:
+    depends_on:
+      - mongodb
+    build: .
+    env_file: ./.env
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CRYPTO_SECRET=bearSecret
+      - JWT_SECRET=bearSecret123
+      - MONGO_URI=mongodb://root:root@mongodb:27017/
+    stdin_open: true
+    tty: true

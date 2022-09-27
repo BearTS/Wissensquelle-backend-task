@@ -7,8 +7,8 @@ class Cors {
     Log.info("Initializing CORS middleware");
 
     const corsOptions = {
-      origin: '*',
-      optionsSuccessStatus: 200
+      origin: "*",
+      optionsSuccessStatus: 200,
     };
     _app.use(cors(corsOptions));
 
